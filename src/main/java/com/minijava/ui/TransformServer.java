@@ -22,18 +22,35 @@ import java.util.Map;
  * <p>Built entirely on the JDK's {@code com.sun.net.httpserver} so the whole demo
  * runs with no third-party dependencies. Endpoints:</p>
  * <ul>
- *   <li>{@code GET /} and static files &rarr; the {@code frontend/} playground.</li>
+ *   <li>{@code GET /} and static files &rarr; the bundled {@code frontend/}
+ *       playground, loaded from the classpath so the server works from any
+ *       working directory (including {@code java -jar}), with an optional
+ *       filesystem fallback for live editing during development.</li>
  *   <li>{@code POST /api/transform} &rarr; run the transforms server-side and
  *       return the rewritten config plus rendered HTML as JSON.</li>
  * </ul>
  */
 public final class TransformServer {
 
+    /** Classpath root under which the bundled front-end assets live. */
+    private static final String CLASSPATH_ROOT = "frontend/";
+
     private final int port;
     private final Path frontendDir;
     private final UiTransformer transformer = new UiTransformer();
     private HttpServer server;
 
+    /** Serve using only the classpath-bundled front end (no filesystem fallback). */
+    public TransformServer(int port) {
+        this(port, null);
+    }
+
+    /**
+     * @param port        port to listen on
+     * @param frontendDir optional filesystem directory checked before the
+     *                    classpath, for live editing during development; may be
+     *                    {@code null} to serve purely from the bundled assets
+     */
     public TransformServer(int port, Path frontendDir) {
         this.port = port;
         this.frontendDir = frontendDir;
@@ -107,8 +124,8 @@ public final class TransformServer {
         String rawPath = exchange.getRequestURI().getPath();
         String relative = rawPath.equals("/") ? "index.html" : rawPath.substring(1);
 
-        Path target = frontendDir.resolve(relative).normalize();
-        if (!target.startsWith(frontendDir) || !Files.isRegularFile(target)) {
+        byte[] bytes = loadAsset(relative);
+        if (bytes == null) {
             byte[] notFound = "404 Not Found".getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
             exchange.sendResponseHeaders(404, notFound.length);
@@ -118,12 +135,54 @@ public final class TransformServer {
             return;
         }
 
-        byte[] bytes = Files.readAllBytes(target);
         exchange.getResponseHeaders().set("Content-Type", contentType(relative));
         exchange.sendResponseHeaders(200, bytes.length);
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(bytes);
         }
+    }
+
+    /**
+     * Load a front-end asset by its request-relative path. Tries an optional
+     * filesystem directory first (for live editing during development), then the
+     * classpath-bundled assets, so the server works from any working directory.
+     * Returns {@code null} when the asset does not exist or the path is unsafe.
+     */
+    private byte[] loadAsset(String relative) throws IOException {
+        if (!isSafeRelative(relative)) {
+            return null;
+        }
+
+        // Filesystem fallback first, so a dev editing the source tree sees changes
+        // without a rebuild. Absent by default.
+        if (frontendDir != null) {
+            Path target = frontendDir.resolve(relative).normalize();
+            if (target.startsWith(frontendDir) && Files.isRegularFile(target)) {
+                return Files.readAllBytes(target);
+            }
+        }
+
+        // Bundled assets on the classpath: works from any CWD and from java -jar.
+        try (InputStream in = TransformServer.class.getClassLoader()
+                .getResourceAsStream(CLASSPATH_ROOT + relative)) {
+            if (in != null) {
+                return in.readAllBytes();
+            }
+        }
+        return null;
+    }
+
+    /** Reject empty, absolute, or parent-traversing paths. */
+    private static boolean isSafeRelative(String relative) {
+        if (relative.isEmpty() || relative.startsWith("/")) {
+            return false;
+        }
+        for (String segment : relative.split("/")) {
+            if (segment.equals("..")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static String contentType(String path) {
