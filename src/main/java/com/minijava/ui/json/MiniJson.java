@@ -176,14 +176,6 @@ public final class MiniJson {
         throw new JsonException("invalid literal at position " + pos);
     }
 
-    private Object readNull() {
-        if (src.startsWith("null", pos)) {
-            pos += 4;
-            return null;
-        }
-        throw new JsonException("invalid literal at position " + pos);
-    }
-
     private void skipWhitespace() {
         while (pos < src.length() && Character.isWhitespace(src.charAt(pos))) {
             pos++;

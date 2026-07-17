@@ -148,12 +148,45 @@
   function parseConfig() {
     try {
       var config = JSON.parse(els.config.value);
-      els.parseStatus.textContent = "valid JSON";
-      els.parseStatus.className = "status ok";
-      return config;
-    } catch (e) {
-      els.parseStatus.textContent = "invalid JSON: " + e.message;
-      els.parseStatus.className = "status error";
+      
+      // Structured logging to CloudWatch (simulated via console and API)
+      console.error('[CloudWatch] Error in parseConfig:', {
+        timestamp: new Date().toISOString(),
+        event: 'parseConfigError',
+        error: e.message,
+        stack: e.stack
+      });
+
+      // Forwarding unrecoverable errors to SQS DLQ (simulated via API endpoint)
+      fetch('/api/dlq/errors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          event: 'parseConfigError', 
+          error: e.message, 
+          timestamp: new Date().toISOString() 
+        })
+      }).catch(dlqErr => console.error('DLQ Forwarding failed:', dlqErr));
+
+      // Structured logging to CloudWatch (simulated via console and API)
+      console.error('[CloudWatch] Error in parseConfig:', {
+        timestamp: new Date().toISOString(),
+        event: 'parseConfigError',
+        error: e.message,
+        stack: e.stack
+      });
+
+      // Forwarding unrecoverable errors to SQS DLQ (simulated via API endpoint)
+      fetch('/api/dlq/errors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          event: 'parseConfigError', 
+          error: e.message, 
+          timestamp: new Date().toISOString() 
+        })
+      }).catch(dlqErr => console.error('DLQ Forwarding failed:', dlqErr));
+
       return null;
     }
   }

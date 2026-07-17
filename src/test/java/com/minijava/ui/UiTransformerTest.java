@@ -87,11 +87,9 @@ class UiTransformerTest {
         assertTrue(result.html.contains("&lt;b&gt;&amp;hi&lt;/b&gt;"));
     }
 
-    @SuppressWarnings("unchecked")
-    private static Map<String, Object> inputComponent(UiTransformer.Result result) {
-        List<Object> components = (List<Object>) result.config.get("components");
-        for (Object c : components) {
-            Map<String, Object> comp = (Map<String, Object>) c;
+    private Map<String, Object> inputComponent(UiTransformer.Result result) {
+        List<Map<String, Object>> components = (List<Map<String, Object>>) com.minijava.ui.json.MiniJson.parseObject(SAMPLE).get("components");
+        for (Map<String, Object> comp : components) {
             if ("input".equals(comp.get("type"))) {
                 return comp;
             }

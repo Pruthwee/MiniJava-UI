@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Entry point for MiniJava-UI.
@@ -22,7 +24,7 @@ import java.nio.file.Paths;
  */
 public final class Main {
 
-    private static final int DEFAULT_PORT = 8080;
+    private static final int DEFAULT_PORT = Integer.parseInt(System.getenv().getOrDefault("SERVER_PORT", "8080"));
 
     private Main() {
     }
@@ -44,7 +46,13 @@ public final class Main {
 
         TransformServer server = new TransformServer(port, frontendDir);
         server.start();
-        Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
+
+        // Use a managed ExecutorService for the shutdown hook to avoid unbounded thread creation
+        ExecutorService shutdownExecutor = Executors.newSingleThreadExecutor();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            shutdownExecutor.submit(server::stop);
+            shutdownExecutor.shutdown();
+        }));
 
         System.out.println("MiniJava-UI is running.");
         System.out.println("  Playground:  http://localhost:" + port + "/");
