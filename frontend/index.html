@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MiniJava-UI &middot; UI Transformation Playground</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>MiniJava-UI</h1>
+    <p class="tagline">A testing playground for UI-transformation flows &mdash; JSON in, transformed UI out.</p>
+  </header>
+
+  <main class="layout">
+    <section class="panel controls">
+      <h2>1 &middot; UI config</h2>
+      <p class="hint">Describe a UI as a JSON config, then apply transformations below.</p>
+      <textarea id="config" spellcheck="false" aria-label="UI config JSON"></textarea>
+      <div class="row">
+        <button id="loadSample" type="button" class="ghost">Load sample</button>
+        <span id="parseStatus" class="status" role="status"></span>
+      </div>
+
+      <h2>2 &middot; Transformations</h2>
+      <fieldset id="transforms" class="transforms">
+        <label><input type="checkbox" value="uppercase-labels" /> Uppercase labels &amp; headings</label>
+        <label><input type="checkbox" value="dark-theme" /> Switch to dark theme</label>
+        <label><input type="checkbox" value="mark-inputs-required" /> Mark inputs required</label>
+        <label><input type="checkbox" value="add-aria-labels" /> Add ARIA labels to inputs</label>
+      </fieldset>
+
+      <h2>3 &middot; Engine</h2>
+      <fieldset class="engine">
+        <label><input type="radio" name="engine" value="js" checked /> Run in browser (JavaScript)</label>
+        <label><input type="radio" name="engine" value="java" /> Use Java backend (<code>/api/transform</code>)</label>
+      </fieldset>
+
+      <div class="row">
+        <button id="run" type="button" class="primary">Transform &rarr;</button>
+        <span id="applied" class="status" role="status"></span>
+      </div>
+    </section>
+
+    <section class="panel results">
+      <div class="result-block">
+        <h2>Before</h2>
+        <div id="beforePreview" class="preview" aria-label="Original UI preview"></div>
+      </div>
+      <div class="result-block">
+        <h2>After</h2>
+        <div id="afterPreview" class="preview" aria-label="Transformed UI preview"></div>
+        <h3>Transformed HTML</h3>
+        <pre id="afterHtml" class="code" aria-label="Transformed HTML source"></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span>MiniJava-UI &middot; a UI-transformation testing app</span>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.minijava</groupId>
+  <artifactId>minijava-ui</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>MiniJava-UI</name>
+  <description>A UI-transformation testing application: HTML/CSS/JS front end with a Java backend for testing UI transformation flows.</description>
+
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <exec.mainClass>com.minijava.ui.Main</exec.mainClass>
+    <junit.version>5.10.2</junit.version>
+  </properties>
+
+  <dependencies>
+    <!-- Test-only: the application itself has zero third-party dependencies. -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>minijava-ui</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
+      <!-- Builds a runnable jar whose manifest points at Main. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.1</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.minijava.ui.Main</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
