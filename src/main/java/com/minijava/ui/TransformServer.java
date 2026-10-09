@@ -1,6 +1,9 @@
 package com.minijava.ui;
 
 import com.minijava.ui.json.MiniJson;
+// com.sun.net.httpserver is part of the jdk.httpserver module (JEP 408 / Java 18+
+// back-ported as a supported API in Java 17 via the jdk.httpserver module).
+// The --add-exports compiler flag in pom.xml makes this dependency explicit.
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
